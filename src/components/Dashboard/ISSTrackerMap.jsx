@@ -3,58 +3,74 @@ import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Higher quality satellite icon
+// Reliable ISS Icon with fixed aspect ratio
 const issIcon = new L.Icon({
-  iconUrl: 'https://cdn-icons-png.flaticon.com/512/2043/2043425.png', 
-  iconSize: [45, 45],
-  iconAnchor: [22, 22],
-  popupAnchor: [0, -22],
+  iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d0/International_Space_Station.svg',
+  iconSize: [50, 30],
+  iconAnchor: [25, 15],
 });
 
-// Component to recenter map
-function RecenterMap({ position }) {
+// Component to handle map view updates and constraints
+function MapController({ position }) {
   const map = useMap();
+
   useEffect(() => {
     if (position) {
-      map.panTo([position.lat, position.lon], { animate: true, duration: 1 });
+      map.panTo([position.lat, position.lon], { animate: true, duration: 1.5 });
     }
   }, [position, map]);
+
   return null;
 }
 
 const ISSTrackerMap = ({ position, history = [] }) => {
   const pathCoordinates = history.map(p => [p.lat, p.lon]);
 
+  // Constraining bounds to prevent horizontal repetition
+  const worldBounds = L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180));
+
   return (
-    <div className="w-full h-full relative z-0">
-      <MapContainer 
-        center={position ? [position.lat, position.lon] : [20, 0]} 
-        zoom={3} 
+    <div className="w-full h-full relative z-0 bg-[#f8f9fa]">
+      <MapContainer
+        center={position ? [position.lat, position.lon] : [20, 0]}
+        zoom={3}
+        minZoom={2}
+        maxZoom={8}
         className="w-full h-full"
         scrollWheelZoom={true}
+        zoomControl={false}
+        maxBounds={worldBounds}
+        maxBoundsViscosity={1.0}
       >
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
           attribution='&copy; CARTO'
-        />
-        
-        {/* Orbit Trail */}
-        <Polyline 
-          positions={pathCoordinates} 
-          pathOptions={{ 
-            color: '#f43f5e', 
-            weight: 3, 
-            opacity: 0.5,
-            dashArray: '10, 10'
-          }} 
+          noWrap={true} // Prevents horizontal repetition
+          bounds={worldBounds}
         />
 
-        {/* Current Position Marker */}
-        {position && (
-          <Marker position={[position.lat, position.lon]} icon={issIcon} />
+        {/* Orbit Trail */}
+        {pathCoordinates.length > 1 && (
+          <Polyline
+            positions={pathCoordinates}
+            pathOptions={{
+              color: '#ef4444',
+              weight: 2,
+              opacity: 0.5,
+              dashArray: '5, 10'
+            }}
+          />
         )}
 
-        <RecenterMap position={position} />
+        {/* ISS Marker */}
+        {position && (
+          <Marker
+            position={[position.lat, position.lon]}
+            icon={issIcon}
+          />
+        )}
+
+        <MapController position={position} />
       </MapContainer>
     </div>
   );

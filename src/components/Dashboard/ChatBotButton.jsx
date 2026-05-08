@@ -12,10 +12,10 @@ const ChatBotButton = () => {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   const { locationName, astronauts, position } = useISSTracker();
   const { articles } = useNews('space');
-  
+
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -45,8 +45,8 @@ const ChatBotButton = () => {
       setMessages(prev => [...prev, { role: 'astra', text: response }]);
     } catch (error) {
       console.error('DEBUG: Chatbot error', error);
-      const errorMsg = error.message.includes('Token') 
-        ? 'Invalid AI Token. Please check your .env file.' 
+      const errorMsg = error.message.includes('Token')
+        ? 'Invalid AI Token. Please check your .env file.'
         : error.message;
       setMessages(prev => [...prev, { role: 'astra', text: `System Error: ${errorMsg}` }]);
     } finally {
@@ -73,19 +73,18 @@ const ChatBotButton = () => {
                 <X size={14} />
               </button>
             </div>
-            
-            <div 
+
+            <div
               ref={scrollRef}
               className="h-80 p-4 overflow-y-auto bg-slate-50 flex flex-col space-y-3 custom-scrollbar"
             >
               {messages.map((msg, i) => (
-                <div 
-                  key={i} 
-                  className={`max-w-[85%] p-3 rounded-xl text-[11px] leading-relaxed ${
-                    msg.role === 'astra' 
-                      ? 'bg-white border border-slate-100 rounded-tl-none text-slate-700 shadow-sm' 
+                <div
+                  key={i}
+                  className={`max-w-[85%] p-3 rounded-xl text-[11px] leading-relaxed ${msg.role === 'astra'
+                      ? 'bg-white border border-slate-100 rounded-tl-none text-slate-700 shadow-sm'
                       : 'bg-slate-900 text-white self-end rounded-tr-none shadow-md'
-                  }`}
+                    }`}
                 >
                   {msg.text}
                 </div>
@@ -99,15 +98,15 @@ const ChatBotButton = () => {
             </div>
 
             <form onSubmit={handleSend} className="p-3 bg-white border-t border-slate-100 flex items-center space-x-2">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about ISS or News..." 
+                placeholder="Ask about ISS or News..."
                 className="flex-1 bg-slate-50 border-none focus:ring-0 text-[11px] py-2 px-3 rounded-lg placeholder:text-slate-400"
                 disabled={loading}
               />
-              <button 
+              <button
                 type="submit"
                 disabled={loading || !input.trim()}
                 className="p-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50"
