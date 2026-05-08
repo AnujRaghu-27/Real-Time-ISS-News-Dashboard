@@ -14,6 +14,22 @@ const getDistance = (lat1, lon1, lat2, lon2) => {
   return R * c;
 };
 
+// Generate initial mock history so the dashboard doesn't look empty on first load
+const generateInitialHistory = () => {
+  const points = [];
+  const now = Date.now();
+  for (let i = 20; i >= 0; i--) {
+    points.push({
+      lat: 0 + (Math.random() - 0.5) * 10,
+      lon: 0 + (Math.random() - 0.5) * 10,
+      timestamp: now - (i * 10000),
+      speed: 27600 + (Math.random() - 0.5) * 50,
+      altitude: 408 + Math.random()
+    });
+  }
+  return points;
+};
+
 export const useISSTracker = () => {
   const [data, setData] = useState({
     latitude: 0,
@@ -22,7 +38,7 @@ export const useISSTracker = () => {
     loading: true,
     error: null,
     position: null,
-    history: [],
+    history: generateInitialHistory(), // Pre-fill history
     astronauts: [],
     locationName: 'Fetching...',
     speed: 27600
@@ -50,8 +66,7 @@ export const useISSTracker = () => {
           }
         }
 
-        // Add slight realistic jitter for visual trend in dashboard (±2 km/h)
-        const jitteredSpeed = currentSpeed + (Math.random() - 0.5) * 4;
+        const jitteredSpeed = currentSpeed + (Math.random() - 0.5) * 20; // Increased jitter for visible trend
 
         const newPos = { 
           lat, 
@@ -61,7 +76,6 @@ export const useISSTracker = () => {
           altitude: 408 + Math.random() 
         };
 
-        // Increase history size to 50 for the orbit trail and chart
         const history = [...prev.history, newPos].slice(-50);
         
         return {
@@ -102,7 +116,6 @@ export const useISSTracker = () => {
   useEffect(() => {
     fetchData();
     fetchAstros();
-    // Faster refresh for mission control feel (10 seconds)
     const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
   }, [fetchData, fetchAstros]);
